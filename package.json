@@ -1,0 +1,28 @@
+{
+  "name": "pp-arg",
+  "version": "1.0.0",
+  "description": "CLI argument parser",
+  "main": "dist/pp-arg.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlos-sweb/pp-arg.git"
+  },
+  "keywords": [
+    "arg",
+    "parser",
+    "commandLine"
+  ],
+  "author": "Carlos Illesca",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/carlos-sweb/pp-arg/issues"
+  },
+  "homepage": "https://github.com/carlos-sweb/pp-arg#readme",
+  "dependencies": {
+    "pp-events": "^1.3.3",
+    "pp-is": "^1.2.6"
+  }
+}
