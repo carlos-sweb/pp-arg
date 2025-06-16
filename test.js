@@ -1,32 +1,29 @@
 import "node_modules/pp-is/dist/pp-is.min.js"
 import "node_modules/pp-events/dist/pp-events.nd.min.js"
 
-const is = ppIs;
-const events = ppEvents;
-
-
-const padLeft=(str,n)=>{
+const is = ppIs,
+events = ppEvents,
+padLeft=(str,n)=>{
 	const emptyspace = " ";
 	return emptyspace.repeat(n)+str
-}
+},
 
-const log = (str,n=0)=>{console.log(padLeft(str,n))}
+log = (str,n=0)=>{console.log(padLeft(str,n))},
 
-const arg = function(args,opt){	
+arg = function(args,opt){	
 	let self = this
-	this._arg = is.isArray(args) ? args.splice(1,args.length) : [];
-	this._title = is.isNil(opt.title) ? "" : opt.title
-	this._version = is.isNil(opt.version) ? "1.0.0" : opt.version
-	this._events = events()
+	self._arg = is.isArray(args) ? args.splice(1,args.length) : [];
+	self._title = is.isNil(opt.title) ? "" : opt.title
+	self._version = is.isNil(opt.version) ? "1.0.0" : opt.version
+	self._events = events()
+	self._flags = [];
 
-	this._flags = [];
-
-	this.register = function(flag,opt){
-		this._flags.push({
-			"name":flag.join(", "),
+	self.register = (flag,opt)=>{
+		self._flags.push({
+			"name":is.isArray(flag) ? flag.join(", ") : flag ,
 			"desc":opt.desc			
-		});
-		is.isFunction(opt.on) && this.on( flag , opt.on )		
+		})
+		is.isFunction(opt.on) && self.on(flag,opt.on)		
 	}
 
 	self.on=(flags,fn)=>{
@@ -35,28 +32,30 @@ const arg = function(args,opt){
 				self._events.on(flag,fn)
 	}
 	self.exec =()=>{
-		for(let flag of self._arg)
-			self._events.checkOn(flag) && self._events.emit(flag)			
+		for(let flag of self._arg){
+			const [strFlag,vlFlag] = flag.split("=")			
+			self._events.checkOn(strFlag) && self._events.emit(strFlag,vlFlag)			
+		}
 	}
 
 	self.version=()=>log("version "+self._version,1)
 
-	this.help=function(){		
-		log("\n Welcome to \u001B[01m\u001B[32m"+this._title+"\u001B[39m");
+	self.help=()=>{		
+		log("\n Welcome to \u001B[32m"+self._title+"\u001B[39m");
 		log("Version 1.0.0\n",1);
 		log("Usage: myprogram [OPTIONS]\n",4);
 		log("Options:\n",4);
-		for(const flag of this._flags )
+		for(const flag of self._flags )
 			log(flag.name+"                       "+flag.desc,4);		
 		log("-h, --help                       Show help",4);
 		log("-v, --version                    Show version\n",4);
 	}
-	this.emptyArg=function(){
-		log(this._title+": Try '"+this._title+" --help' for more information");
+	self.emptyArg=()=>{
+		log(self._title+": Try '"+self._title+" --help' for more information");
 	}
-	this.on(["--help","-h"],this.help.bind(this))
-	this.on(["--version","-v"],this.version.bind(this))
-	this._arg.length == 0 && this.emptyArg()
+	self.on(["--help","-h"],self.help)
+	self.on(["--version","-v"],self.version)
+	self._arg.length == 0 && self.emptyArg()
 }
 
 const _arguments = !is.isNil(scriptArgs) ? scriptArgs : [];
@@ -66,55 +65,17 @@ const parser = new arg(_arguments,{
 	version:"1.0.0",
 	desc:""
 })
-parser.register(["-t","--time"],{
+parser.register(["-t","--time"],{	
 	"desc":"Show Time in system",
-	"on":function(){
-
+	"on":(value)=>{
+		console.log("::",value);
 	}
-});
-parser.on(["--time","-t"],function(){	
-	const days = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"]
-	const months = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"]	
-	console.log(" -> Hoy es :",days.at(new Date().getDay()),"del mes", months.at(new Date().getMonth()),"Año ",new Date().getYear() );	
-});
+})
 
-parser.on(["--calendar","-c"],function(){	
-	const days = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"]
-	const months = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"]	
-
-	const green=(str)=>{
-		return "\u001B[01m\u001B[32m"+str+"\u001B[39m"
-	}
-	const blue=(str)=>{
-		return "\u001B[01m\u001B[34m"+str+"\u001B[39m"
-	}
-	const silver=(str)=>{
-		return "\u001B[01m\u001B[30m"+str+"\u001B[39m"
-	}
-
-	log("");
-	log("|-----------------------------------------|",5)
-	log("| Calendar Month: Julio                   |",5)	            
-	log("|-----------------------------------------|",5)
-	log("| Lun | Mar | Mie | Jue | Vie | Sab | Dom |",5)
-	log("|-----------------------------------------|",5)
-	log("|  "+silver("31")+" | "+blue("01")+"  | "+blue("02")+"  | "+blue("03")+"  | "+blue("04")+"  | "+green("05")+"  | "+green("06")+"  |",5)
-	log("|-----------------------------------------|",5)
-	log("|  "+blue("07")+" | "+blue("08")+"  | "+blue("09")+"  | "+blue("10")+"  | "+blue("11")+"  | "+green("12")+"  | "+green("12")+"  |",5)
-	log("|-----------------------------------------|",5)
-	log("|  "+blue("14")+" | "+blue("15")+"  | "+blue("16")+"  | "+blue("17")+"  | "+blue("18")+"  | "+green("19")+"  | "+green("20")+"  |",5)
-	log("|-----------------------------------------|",5)
-	log("|  "+blue("21")+" | "+blue("22")+"  | "+blue("23")+"  | "+blue("24")+"  | "+blue("25")+"  | "+green("26")+"  | "+green("27")+"  |",5)
-	log("|-----------------------------------------|",5)
-	log("|  "+blue("28")+" | "+blue("29")+"  | "+blue("30")+"  | "+blue("31")+"  | "+silver("01")+"  | "+silver("02")+"  | "+silver("03")+"  |",5)
-	log("|-----------------------------------------|",5)
-	log("");
-
-
-});
-
+parser.on(["--time","-t"],function(value){	
+	console.log("Value from --time es :",value)
+})
+parser.on(["--calendar","-c"],function(vl){	
+	console.log(vl);
+})
 parser.exec();
-
-
-
-
